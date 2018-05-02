@@ -1,7 +1,6 @@
 import sendGCM from './sendGCM';
 import sendAPN from './sendAPN';
 import sendADM from './sendADM';
-import sendWNS from './sendWNS';
 
 const defaultSettings = {
     gcm: {
@@ -77,16 +76,13 @@ PN.prototype.send = function send(_regIds, data, callback) {
     const promises = [];
     const regIdsGCM = [];
     const regIdsAPN = [];
-    const regIdsWNS = [];
     const regIdsADM = [];
     const regIdsUnk = [];
     const regIds = Array.isArray(_regIds || []) ? _regIds || [] : [_regIds];
 
     // Classify each pushId for corresponding device
     for (const regId of regIds) {
-        if (regId.substring(0, 4) === 'http') {
-            regIdsWNS.push(regId);
-        } else if (/^(amzn[0-9]*.adm)/i.test(regId)) {
+        if (/^(amzn[0-9]*.adm)/i.test(regId)) {
             regIdsADM.push(regId);
         } else if (regId.length > 64) {
             regIdsGCM.push(regId);
@@ -106,11 +102,6 @@ PN.prototype.send = function send(_regIds, data, callback) {
         // iOS APN
         if (regIdsAPN.length > 0) {
             promises.push(this.sendWith(sendAPN, regIdsAPN, data));
-        }
-
-        // Microsoft WNS
-        if (regIdsWNS.length > 0) {
-            promises.push(this.sendWith(sendWNS, regIdsWNS, data));
         }
 
         // Amazon ADM

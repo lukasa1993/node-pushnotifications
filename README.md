@@ -1,7 +1,7 @@
 Node Push Notifications
 ========
 
-A node.js module for interfacing with Apple Push Notification, Google Cloud Messaging, Windows Push Notification and Amazon Device Messaging services.
+A node.js module for interfacing with Apple Push Notification, Google Cloud Messaging, Amazon Device Messaging services.
 
 [![License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://npmjs.org/package/node-pushnotifications)
 [![NPM version](http://img.shields.io/npm/v/node-pushnotifications.svg?style=flat)](https://npmjs.org/package/node-pushnotifications)
@@ -48,12 +48,6 @@ const settings = {
         client_id: null,
         client_secret: null,
         ...
-    },
-    wns: {
-        client_id: null,
-        client_secret: null,
-        notificationMethod: 'sendTileSquareBlock',
-        ...
     }
 };
 const PushNotifications = require('node-pushnotifications');
@@ -63,7 +57,6 @@ const push = new PushNotifications(settings);
 * GCM options: see [node-gcm](https://github.com/ToothlessGear/node-gcm#custom-gcm-request-options)
 * APN options: see [node-apn](https://github.com/node-apn/node-apn/blob/master/doc/provider.markdown)
 * ADM options: see [node-adm](https://github.com/umano/node-adm)
-* WNS options: see [wns](https://github.com/tjanczuk/wns)
 
 *iOS:* It is recomended to use [provider authentication tokens](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html). You need the .p8 certificate that you can obtain in your [account membership](https://cloud.githubusercontent.com/assets/8225312/20380437/599a767c-aca2-11e6-82bd-3cbfc2feee33.png). You should ask for an *Apple Push Notification Authentication Key (Sandbox & Production)* or *Apple Push Notification service SSL (Sandbox & Production)*. However, you can also use certificates. See [node-apn](https://github.com/node-apn/node-apn/wiki/Preparing-Certificates) to see how to prepare cert.pem and key.pem. 
 
@@ -125,9 +118,6 @@ const data = {
     threadId: '', // apn
     expiry: Math.floor(Date.now() / 1000) + 28 * 86400, // seconds
     timeToLive: 28 * 86400, // if both expiry and timeToLive are given, expiry will take precedency
-    headers: [], // wns
-    launch: '', // wns
-    duration: '', // wns
     consolidationKey: 'my notification', // ADM
 };
 
@@ -165,10 +155,6 @@ push.send(registrationIds, data)
     },
     {
         method: 'apn',
-        ... // Same structure here, except for message.orignalRegId
-    },
-    {
-        method: 'wns',
         ... // Same structure here, except for message.orignalRegId
     },
     {
@@ -326,32 +312,6 @@ The following parameters are used to create an APN message:
 
 * [See node-apn fields](https://github.com/node-apn/node-apn/blob/master/doc/notification.markdown)
 * **Please note** that `topic` is required ([see node-apn docs](https://github.com/node-apn/node-apn/blob/master/doc/notification.markdown#notificationtopic))
-
-## WNS
-
-The following fields are used to create a WNS message:
-
-```js
-const notificationMethod = settings.wns.notificationMethod;
-const opts = Object.assign({}, settings.wns);
-opts.headers = data.headers || opts.headers;
-opts.launch = data.launch || opts.launch;
-opts.duration = data.duration || opts.duration;
-
-delete opts.notificationMethod;
-delete data.headers;
-delete data.launch;
-delete data.duration;
-
-wns[notificationMethod](regId, data, opts, (err, response) => { ... });
-
-```
-
-*data is the parameter in `push.send(registrationIds, data)`*
-
-* [See wns fileds](https://github.com/tjanczuk/wns)
-
-**Note:** Please keep in mind that if `data.accessToken` is supplied, each push notification will be sent after the previous one has been **responded**. This is because Microsoft may send a new `accessToken` in the response and it should be used in successive requests. This can slow down the whole process depending on the number of devices to send.
 
 ## ADM
 
